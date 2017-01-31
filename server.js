@@ -36,13 +36,15 @@ function handleError(res, reason, message, code) {
 }
 
 
+var userRouter = express.Router();
+
 /*  "/api/users/:id"
  *    GET: find user by id
  *    PUT: update user by id
  *    DELETE: deletes user by id
  */
 
-app.get("/api/users/:id", function(req, res) {
+userRouter.get("/api/users/:id", function(req, res) {
   db.collection(USERS_COLLECTION).findOne({ _id: new ObjectID(req.params.id) }, function(err, doc) {
     if (err) {
       handleError(res, err.message, "Failed to get user");
@@ -52,7 +54,7 @@ app.get("/api/users/:id", function(req, res) {
   });
 });
 
-app.put("/api/users/:id", function(req, res) {
+userRouter.put("/api/users/:id", function(req, res) {
   var updateDoc = req.body;
   delete updateDoc._id;
 
@@ -66,7 +68,7 @@ app.put("/api/users/:id", function(req, res) {
   });
 });
 
-app.delete("/api/users/:id", function(req, res) {
+userRouter.delete("/api/users/:id", function(req, res) {
   db.collection(USERS_COLLECTION).deleteOne({_id: new ObjectID(req.params.id)}, function(err, result) {
     if (err) {
       handleError(res, err.message, "Failed to delete user");
@@ -83,17 +85,17 @@ app.delete("/api/users/:id", function(req, res) {
  *    POST: creates a new user
  */
 
-app.get("/api/users", function(req, res) {
+userRouter.get("/api/users", function(req, res) {
   db.collection(USERS_COLLECTION).find({}).toArray(function(err, docs) {
     if (err) {
-      handleError(res, err.message, "Failed to get contacts.");
+      handleError(res, err.message, "Failed to get users.");
     } else {
       res.status(200).json(docs);
     }
   });
 });
 
-app.post("/api/users", function(req, res) {
+userRouter.post("/api/users", function(req, res) {
   var newUser = req.body;
 
   if (!req.body.name) {
