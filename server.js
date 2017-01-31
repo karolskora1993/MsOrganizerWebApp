@@ -29,6 +29,12 @@ mongodb.MongoClient.connect(process.env.MONGODB_URI, function (err, database) {
   });
 });
 
+// Generic error handler used by all endpoints.
+function handleError(res, reason, message, code) {
+  console.log("ERROR: " + reason);
+  res.status(code || 500).json({"error": message});
+}
+
 
 /*  "/api/users/:id"
  *    GET: find user by id
@@ -37,12 +43,37 @@ mongodb.MongoClient.connect(process.env.MONGODB_URI, function (err, database) {
  */
 
 app.get("/api/users/:id", function(req, res) {
+  db.collection(USERS_COLLECTION).findOne({ _id: new ObjectID(req.params.id) }, function(err, doc) {
+    if (err) {
+      handleError(res, err.message, "Failed to get user");
+    } else {
+      res.status(200).json(doc);
+    }
+  });
 });
 
 app.put("/api/users/:id", function(req, res) {
+  var updateDoc = req.body;
+  delete updateDoc._id;
+
+  db.collection(USERS_COLLECTION).updateOne({_id: new ObjectID(req.params.id)}, updateDoc, function(err, doc) {
+    if (err) {
+      handleError(res, err.message, "Failed to update user");
+    } else {
+      updateDoc._id = req.params.id;
+      res.status(200).json(updateDoc);
+    }
+  });
 });
 
 app.delete("/api/users/:id", function(req, res) {
+  db.collection(USERS_COLLECTION).deleteOne({_id: new ObjectID(req.params.id)}, function(err, result) {
+    if (err) {
+      handleError(res, err.message, "Failed to delete user");
+    } else {
+      res.status(200).json(req.params.id);
+    }
+  });
 });
 
 
